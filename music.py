@@ -1,7 +1,9 @@
 from tkinter import *
 import os
 import pygame
-font = "inconsolata"
+from mutagen.mp3 import *
+import math
+font = "roboto"
 root = Tk()
 root.minsize(800, 500)
 pygame.mixer.init()
@@ -96,9 +98,20 @@ def next_song():
 	songs.select_set(index)
 	songs.event_generate("<<ListboxSelect>>")
 
+def thing(event):
+	position_slider.bind("<ButtonRelease-1>", change_position)
+
+def change_position(event):
+	global index
+	length = MP3(files[index]).info.length
+	pygame.mixer.music.set_pos(length / (100 / position_slider.get()))
+
+
 
 
 # Placing widgets
+position_slider = Scale(root, from_=0, to=100, orient=HORIZONTAL, command=thing)
+position_slider.place(x=0, y=450)
 dynamic_control = StringVar()
 dynamic_control.set("Play")
 dynamic_title = StringVar()

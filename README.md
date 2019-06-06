@@ -10,6 +10,8 @@ Changelog:\
 . Added slider to change position in the song!\
 . Made it so that if the slider position is at 100, the next song will play\
 . Also made it so that when the song ends, it plays the next song\
+
+06/06/2019:\
 . Added 2 labels, one for current song position and another for song length. The position label updates on change in song position\
 . Fixed multiple bugs:\
     . Slider speed would move according to length of song, not from normally adding\

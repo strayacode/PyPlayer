@@ -13,5 +13,6 @@ Changelog:\
 . Added 2 labels, one for current song position and another for song length. The position label updates on change in song position\
 . Fixed multiple bugs:\
     . Slider speed would move according to length of song, not from normally adding\
-    . When the next or previous song was played the slider would stop moving due to the amount of pixels needed for the slider to move would round to 0. This is due to the song being longer 
+    . When the next or previous song was played the slider would stop moving due to the amount of pixels needed for the slider to move would round to 0. This is due to the song being longer\
+    . Title and current position labels wouldn't be visible until the song was played\
     

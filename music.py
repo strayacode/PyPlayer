@@ -73,7 +73,7 @@ def previous_song():
 		index = len(files) - 1
 	pygame.mixer.music.load(files[index])
 	pygame.mixer.music.play()
-	dynamic_title.set(files[index][:-4])
+	
 	state = "playing"
 	played = True
 	dynamic_control.set("Pause")
@@ -130,8 +130,9 @@ def check_duration():
 
 	formatted_length = time.strftime("%M:%S", time.gmtime(round(length, 1)))
 	song_length.set(formatted_length)
-
-
+	if state == "paused" and played == False:
+		current_pos.set("00:00")
+	dynamic_title.set(files[index][:-4])
 	if state == "playing":
 		counter += 0.1
 		duration += round(10 / length, 2)
@@ -139,7 +140,6 @@ def check_duration():
 		formatted_duration= time.strftime("%M:%S", time.gmtime(counter))
 		current_pos.set(formatted_duration)
 		position_slider.set(x_coord)
-		print(round(length, 1), round(counter, 1))
 		if round(length, 1) == round(counter, 1):
 			next_song()
 			duration = 0

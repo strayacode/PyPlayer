@@ -1,8 +1,11 @@
 from tkinter import *
 import os
-import pygame
+import contextlib
+with contextlib.redirect_stdout(None):
+    import pygame 
 from mutagen.mp3 import *
 import math
+import random
 font = "roboto"
 root = Tk()
 root.minsize(800, 500)
@@ -116,6 +119,26 @@ def next_song():
 	
 	songs.event_generate("<<ListboxSelect>>")
 
+def shuffle_song():
+	global index
+	global duration
+	global x_coord
+	global counter
+	c = 0
+	random_song = (random.randint(0, len(files) - 1))
+	index = random_song
+	pygame.mixer.music.load(files[random_song])
+	pygame.mixer.music.play()
+	dynamic_title.set(files[random_song][:-4])
+	while c < len(files):
+		songs.select_clear(c)
+		c += 1
+	songs.select_set(random_song)
+	position_slider.set(0)
+	duration = 0
+	x_coord = 0
+	counter = 0
+
 def thing(event):
 	position_slider.bind("<Button-1>", mouse_click)
 
@@ -126,13 +149,10 @@ def check_duration():
 	global x_coord
 	global counter
 	length = MP3(files[index]).info.length
-	
-
 	formatted_length = time.strftime("%M:%S", time.gmtime(round(length, 1)))
 	song_length.set(formatted_length)
 	if state == "paused" and played == False:
 		current_pos.set("00:00")
-	dynamic_title.set(files[index][:-4])
 	if state == "playing":
 		counter += 0.1
 		duration += round(10 / length, 2)
@@ -143,11 +163,10 @@ def check_duration():
 		if round(length, 1) == round(counter, 1):
 			next_song()
 			duration = 0
-			print("test")
-
 	root.after(100, check_duration)
 
-	
+def volume():
+	pygame.mixer.music.set_volume()	
 	
 
 def mouse_click(event):
@@ -171,6 +190,21 @@ def mouse_click(event):
 
 
 # Placing widgets
+volume_slider = Scale(root, 
+	from_=0, 
+	to=1, 
+	orient=HORIZONTAL,  
+	background="#191919", 
+	sliderrelief=FLAT, 
+	sliderlength=5,
+	width=10,
+	relief=FLAT, 
+	length=200, 
+	troughcolor="#000000", 
+	resolution=0.01, 
+	showvalue=0,
+	highlightbackground="#191919")
+
 position_slider = Scale(root, 
 	from_=0, 
 	to=100, 
@@ -186,6 +220,7 @@ position_slider = Scale(root,
 	showvalue=0,
 	highlightbackground="#191919")
 position_slider.place(x=0, y=450)
+volume_slider.place(x=0, y=475)
 current_pos = StringVar()
 song_length = StringVar()
 dynamic_control = StringVar()
@@ -199,6 +234,8 @@ songs = Listbox(root, width=95, font="{} 12 bold".format(font), background="#191
 songs.bind("<<ListboxSelect>>", songselect)
 for song in files:
 	songs.insert(END, song)
+shuffle_button = Button(root, width=10, text="Shuffle", command=shuffle_song, font="{} 12".format(font))
+shuffle_button.place(x=300, y=300)
 songs.place(x=20, y=20)
 next_button = Button(root, width=10, text="Next", command=next_song, font="{} 12".format(font))
 next_button.place(x=0, y=300)

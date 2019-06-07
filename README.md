@@ -18,3 +18,6 @@ Changelog:\
     . When the next or previous song was played the slider would stop moving due to the amount of pixels needed for the slider to move would round to 0. This is due to the song being longer\
     . Title and current position labels wouldn't be visible until the song was played\
     
+07/06/2019:\
+. Added shuffle button
+    

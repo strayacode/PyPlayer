@@ -21,3 +21,5 @@ Changelog:\
 07/06/2019:\
 . Added shuffle button
     
+09/06/2019:\
+. Added a music downloader!

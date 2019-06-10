@@ -1,4 +1,5 @@
 from tkinter import *
+from tkinter import filedialog
 import os
 import contextlib
 with contextlib.redirect_stdout(None):
@@ -10,17 +11,34 @@ import youtube
 font = "roboto"
 root = Tk()
 root.minsize(800, 500)
-pygame.mixer.init()
+pygame.mixer.init(48000, -16, 2, 1024)
 root.configure(background="#191919")
 files = []
-path = "/home/straya/snd/"
+path = ""
 played = False
 state = "paused"
 duration = 0
 x_coord = 0
 counter = 0
+def get_directory():
+	global path
+	if len(path) == 0:
+		path = filedialog.askdirectory()
+
+
+if os.path.getsize("D:/Documents/Code/PyPlayer/preferences.txt") == 0:
+	file = open("preferences.txt", "a")
+	get_directory()
+	file.write(path)	
+	file.close()	
+else:
+	file = open("preferences.txt", "r")
+	for line in file:
+		path = line
+
 pygame.mixer.music.set_volume(0.4)
 os.chdir(path)
+
 def get_files():
 	files.clear()
 	for (dirpath, dirnames, filenames) in os.walk(path):
@@ -190,6 +208,7 @@ def mouse_click(event):
 	x_coord = 100 / (800 / (event.x - 1))
 	position_slider.set(x_coord)
 	if played == True:
+		print(x_coord)
 		pygame.mixer.music.set_pos((length * x_coord) / 100)
 		duration = round((length * x_coord) / 100, 1)
 		counter = round((length * x_coord) / 100, 1)

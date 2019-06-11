@@ -12,4 +12,7 @@ ydl_opts = {
 
 def download(term):
     with youtube_dl.YoutubeDL(ydl_opts) as ydl:
-        ydl.download(["ytsearch:{}".format(term)])
+    	if term.startswith('https://'):
+    		ydl.download([term])
+    	else:
+        	ydl.download(["ytsearch:{}".format(term)])

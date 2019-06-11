@@ -26,4 +26,5 @@ Changelog:\
 
 11/06/2019:\
 . Significantly decreased amount of data used when downloading mp3 files\
-. Significantly decreased download times
+. Significantly decreased download times\
+. Added youtube link support

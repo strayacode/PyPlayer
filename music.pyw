@@ -20,6 +20,7 @@ state = "paused"
 duration = 0
 x_coord = 0
 counter = 0
+pygame.mixer.music.set_volume(0.1)
 def get_directory():
 	global path
 	if len(path) == 0:
@@ -55,6 +56,16 @@ else:
 import time
 
 def songselect(event):
+	global played
+	global state
+	global counter 
+	global duration
+	global x_coord
+	duration = 0
+	x_coord = 0
+	position_slider.set(0)
+	counter = 0
+
 	index = songs.curselection()
 	index = index[0]
 	pygame.mixer.music.load(files[index])
@@ -176,6 +187,7 @@ def check_duration():
 	global played
 	global x_coord
 	global counter
+
 	if len(files) > 0:
 		length = MP3(files[index]).info.length
 		formatted_length = time.strftime("%M:%S", time.gmtime(round(length, 1)))
@@ -194,8 +206,8 @@ def check_duration():
 				duration = 0
 	root.after(100, check_duration)
 
-def volume():
-	pygame.mixer.music.set_volume()	
+def volume(event):
+	pygame.mixer.music.set_volume(volume_slider.get())	
 	
 
 def mouse_click(event):
@@ -224,14 +236,14 @@ def youtube_launch():
 	
 	youtube_window = Toplevel(background="#191919")
 	youtube_window.geometry('800x500')
-	search_bar = Entry(youtube_window, font="{} 12 bold".format(font))
+	search_bar = Entry(youtube_window, font="{} 12 bold".format(font), width=78)
 	search_bar.place(x=0, y=0)
 	def youtube_download():
 		youtube.download(search_bar.get())	
 	close_button = Button(youtube_window, text="Close Window", font="{} 12 bold".format(font), command=youtube_close)
 	close_button.place(x=300, y=400)
 	download_button = Button(youtube_window, text="Download", font="{} 12 bold".format(font), command=youtube_download)
-	download_button.place(x=200, y=0)
+	download_button.place(x=705, y=0)
 
 
 
@@ -251,6 +263,7 @@ volume_slider = Scale(root,
 	sliderlength=5,
 	width=10,
 	relief=FLAT, 
+	command=volume,
 	length=200, 
 	troughcolor="#000000", 
 	resolution=0.01, 
@@ -285,7 +298,7 @@ song_title.place(x=0, y=470)
 songs = Listbox(root, width=85, font="{} 12 bold".format(font), background="#191919", foreground="#ffffff", highlightthickness=0, borderwidth=-1,selectborderwidth=0, selectbackground="#2d5391", selectforeground="#ffffff", relief=FLAT)
 songs.bind("<<ListboxSelect>>", songselect)
 for song in files:
-	songs.insert(END, song)
+	songs.insert(END, song[:-4])
 shuffle_button = Button(root, width=10, text="Shuffle", command=shuffle_song, font="{} 12".format(font))
 shuffle_button.place(x=300, y=300)
 songs.place(x=20, y=20)
@@ -297,5 +310,6 @@ previous_button = Button(root, width=10, text="Previous", command=previous_song,
 previous_button.place(x=200, y=300)
 song_length_label.place(x=755, y=440)
 current_pos_label.place(x=0, y=440)
+volume_slider.set(0.4)
 check_duration()
 root.mainloop()

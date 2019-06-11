@@ -28,3 +28,5 @@ Changelog:\
 . Significantly decreased amount of data used when downloading mp3 files\
 . Significantly decreased download times\
 . Added youtube link support
+. Got a volume slider to function which can change the current volume\
+. Fixed issue where duration title and slider wouldn't behave correctly when song was alternatively selected from the list

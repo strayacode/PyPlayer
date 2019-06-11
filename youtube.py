@@ -2,8 +2,8 @@
 from __future__ import unicode_literals
 import youtube_dl
 ydl_opts = {
-	'audio-format': 'best',
-	'outtmpl': 'D:/Documents/Music/%(title)s.%(ext)s',
+	'format': "140",
+	'outtmpl': '/home/straya/snd/%(title)s.%(ext)s',
 	'postprocessors': [{
         'key': 'FFmpegExtractAudio',
         'preferredcodec': 'mp3'

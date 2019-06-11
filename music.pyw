@@ -11,7 +11,7 @@ import youtube
 font = "roboto"
 root = Tk()
 root.minsize(800, 500)
-pygame.mixer.init(48000, -16, 2, 1024)
+pygame.mixer.init()
 root.configure(background="#191919")
 files = []
 path = ""
@@ -26,7 +26,7 @@ def get_directory():
 		path = filedialog.askdirectory()
 
 
-if os.path.getsize("D:/Documents/Code/PyPlayer/preferences.txt") == 0:
+if os.path.getsize("/home/straya/code/PyPlayer/preferences.txt") == 0:
 	file = open("preferences.txt", "a")
 	get_directory()
 	file.write(path)	
@@ -208,7 +208,6 @@ def mouse_click(event):
 	x_coord = 100 / (800 / (event.x - 1))
 	position_slider.set(x_coord)
 	if played == True:
-		print(x_coord)
 		pygame.mixer.music.set_pos((length * x_coord) / 100)
 		duration = round((length * x_coord) / 100, 1)
 		counter = round((length * x_coord) / 100, 1)

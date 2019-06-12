@@ -30,3 +30,8 @@ Changelog:\
 . Added youtube link support
 . Got a volume slider to function which can change the current volume\
 . Fixed issue where duration title and slider wouldn't behave correctly when song was alternatively selected from the list
+
+12/06/2019:\
+. Added soundcloud support\
+. Added widget which allows to choose which service you want to download from\
+. Made minor changes to the UI

@@ -10,9 +10,25 @@ ydl_opts = {
     }]
 }
 
-def download(term):
-    with youtube_dl.YoutubeDL(ydl_opts) as ydl:
-    	if term.startswith('https://'):
-    		ydl.download([term])
-    	else:
-        	ydl.download(["ytsearch:{}".format(term)])
+sc_opts = {
+	'format': "http_mp3_128_url",
+	'outtmpl': '/home/straya/snd/%(title)s.%(ext)s',
+	'postprocessors': [{
+        'key': 'FFmpegExtractAudio',
+        'preferredcodec': 'mp3'
+    }]
+}
+
+def download(term, service):
+	if service == "Youtube":
+		with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+			if term.startswith('https://www.youtube.com/watch?v='):
+				ydl.download([term])
+			else:
+				ydl.download(["ytsearch:{}".format(term)])
+	if service == "Soundcloud":
+		with youtube_dl.YoutubeDL(sc_opts) as sc:
+			if term.startswith('https://soundcloud.com/'):
+				sc.download([term])
+			else:
+				sc.download(["scsearch:{}".format(term)])

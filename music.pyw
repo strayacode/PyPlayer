@@ -1,5 +1,5 @@
 from tkinter import *
-from tkinter import filedialog
+from tkinter import filedialog, ttk
 import os
 import contextlib
 with contextlib.redirect_stdout(None):
@@ -8,6 +8,8 @@ from mutagen.mp3 import *
 import math
 import random
 import youtube
+from PIL import Image, ImageTk
+import time
 font = "roboto"
 root = Tk()
 root.minsize(800, 500)
@@ -53,7 +55,7 @@ if len(files) == 0:
 	print("add some songs!")
 else:
 	pygame.mixer.music.load(files[index])
-import time
+
 
 def songselect(event):
 	global played
@@ -232,18 +234,20 @@ def youtube_launch():
 		songs.delete(0, END)
 		get_files()
 		for file in files:
-			songs.insert(END, file)
+			songs.insert(END, file[:-4])
 	
 	youtube_window = Toplevel(background="#191919")
 	youtube_window.geometry('800x500')
 	search_bar = Entry(youtube_window, font="{} 12 bold".format(font), width=78)
 	search_bar.place(x=0, y=0)
 	def youtube_download():
-		youtube.download(search_bar.get())	
+		youtube.download(search_bar.get(), service_select.get())	
 	close_button = Button(youtube_window, text="Close Window", font="{} 12 bold".format(font), command=youtube_close)
 	close_button.place(x=300, y=400)
 	download_button = Button(youtube_window, text="Download", font="{} 12 bold".format(font), command=youtube_download)
 	download_button.place(x=705, y=0)
+	service_select = ttk.Combobox(youtube_window, values=["Youtube", "Soundcloud"], font="{} 12 bold".format(font))
+	service_select.place(x=0, y=200)
 
 
 
@@ -251,7 +255,7 @@ def youtube_launch():
 
 
 # Placing widgets
-youtube_open = Button(root, text="Youtube", command=youtube_launch, font="{} 12 bold".format(font))
+youtube_open = Button(root, text="Download", command=youtube_launch, font="{} 12 bold".format(font), background="#000000", foreground="#ffffff")
 youtube_open.place(x=0, y=380)
 
 volume_slider = Scale(root, 
@@ -295,18 +299,18 @@ song_length_label = Label(root, font="{} 12 bold".format(font), textvariable=son
 current_pos_label = Label(root, font="{} 12 bold".format(font), textvariable=current_pos, background="#191919", foreground="#ffffff")
 song_title = Label(root, font="{} 12 bold".format(font), textvariable=dynamic_title, background="#191919", foreground="#ffffff")
 song_title.place(x=0, y=470)
-songs = Listbox(root, width=85, font="{} 12 bold".format(font), background="#191919", foreground="#ffffff", highlightthickness=0, borderwidth=-1,selectborderwidth=0, selectbackground="#2d5391", selectforeground="#ffffff", relief=FLAT)
+songs = Listbox(root, width=85, font="{} 12 bold".format(font), background="#191919", foreground="#ffffff", highlightthickness=0, borderwidth=-1, selectborderwidth=0, selectbackground="#2d5391", selectforeground="#ffffff", relief=FLAT)
 songs.bind("<<ListboxSelect>>", songselect)
 for song in files:
 	songs.insert(END, song[:-4])
-shuffle_button = Button(root, width=10, text="Shuffle", command=shuffle_song, font="{} 12".format(font))
+shuffle_button = Button(root, width=10, text="Shuffle", command=shuffle_song, font="{} 12".format(font), background="#000000", foreground="#ffffff")
 shuffle_button.place(x=300, y=300)
 songs.place(x=20, y=20)
-next_button = Button(root, width=10, text="Next", command=next_song, font="{} 12".format(font))
+next_button = Button(root, width=10, text="Next", command=next_song, font="{} 12".format(font), background="#000000", foreground="#ffffff")
 next_button.place(x=0, y=300)
-play_button = Button(root, width=10, text="Play", command=play_pause_control, font="{} 12".format(font), textvariable=dynamic_control)
+play_button = Button(root, width=10, text="Play", command=play_pause_control, font="{} 12".format(font), textvariable=dynamic_control, background="#000000", foreground="#ffffff")
 play_button.place(x=100, y=300)
-previous_button = Button(root, width=10, text="Previous", command=previous_song, font="{} 12".format(font))
+previous_button = Button(root, width=10, text="Previous", command=previous_song, font="{} 12".format(font), background="#000000", foreground="#ffffff")
 previous_button.place(x=200, y=300)
 song_length_label.place(x=755, y=440)
 current_pos_label.place(x=0, y=440)

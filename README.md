@@ -35,3 +35,7 @@ Changelog:\
 . Added soundcloud support\
 . Added widget which allows to choose which service you want to download from\
 . Made minor changes to the UI
+
+16/06/2019:\
+. Majorly improved the UI\
+. Added thumbnail support

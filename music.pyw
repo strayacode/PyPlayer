@@ -217,11 +217,20 @@ def check_duration():
 	root.after(100, check_duration)
 
 def get_thumbnail(file):
+	global thumbnail
+	global thumb
+	
 	audio = ID3(file)
 	album_art = audio.getall("APIC")[0].data
 	with open("image.jpg", "wb") as img:
 		img.write(album_art)
-
+	thumb = Image.open("/home/straya/snd/image.jpg")
+	resize = thumb.resize((45, 45), Image.ANTIALIAS)
+	resize.save("/home/straya/snd/image.jpg")
+	thumb_updated = ImageTk.PhotoImage(resize)
+	thumbnail.configure(image=thumb_updated)
+	thumbnail.image = thumb_updated
+	
 def volume(event):
 	pygame.mixer.music.set_volume(volume_slider.get())	
 	
@@ -287,7 +296,6 @@ canvas.place(x=-1, y=-1)
 download_button = Button(root, command=youtube_launch, image=downloadicon, background="#111111", activebackground="#111111", highlightthickness=-1, bd=0)
 download_button.place(x=5, y=470)
 thumbnail = Label(root, image=thumb)
-thumbnail.image = thumb
 thumbnail.place(x=6, y=544)
 volume_slider = Scale(root, 
 	from_=0, 

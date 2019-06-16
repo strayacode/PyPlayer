@@ -38,4 +38,5 @@ Changelog:\
 
 16/06/2019:\
 . Majorly improved the UI\
-. Added thumbnail support
+. Added thumbnail support\
+. Fixed problem where thumbnail wasn't resized correctly and didn't update when the song changed

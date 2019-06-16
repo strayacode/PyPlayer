@@ -2,21 +2,29 @@
 from __future__ import unicode_literals
 import youtube_dl
 ydl_opts = {
+	'writethumbnail': True,
 	'format': "140",
 	'outtmpl': '/home/straya/snd/%(title)s.%(ext)s',
-	'postprocessors': [{
-        'key': 'FFmpegExtractAudio',
-        'preferredcodec': 'mp3'
-    }]
+	'postprocessors': [
+        {
+            'key': 'FFmpegExtractAudio',
+            'preferredcodec': 'mp3',
+        },
+        {'key': 'EmbedThumbnail'},
+    ],
 }
 
 sc_opts = {
+	'writethumbnail': True,
 	'format': "http_mp3_128_url",
 	'outtmpl': '/home/straya/snd/%(title)s.%(ext)s',
-	'postprocessors': [{
-        'key': 'FFmpegExtractAudio',
-        'preferredcodec': 'mp3'
-    }]
+	'postprocessors': [
+		{
+	        'key': 'FFmpegExtractAudio',
+	        'preferredcodec': 'mp3',
+	    },
+	    {'key': 'EmbedThumbnail'},   
+    ],
 }
 
 def download(term, service):

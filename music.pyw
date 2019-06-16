@@ -5,16 +5,17 @@ import contextlib
 with contextlib.redirect_stdout(None):
     import pygame 
 from mutagen.mp3 import *
+from mutagen.id3 import ID3
 import math
 import random
 import youtube
 from PIL import Image, ImageTk
 import time
+from config import *
 font = "roboto"
 root = Tk()
-root.minsize(800, 500)
+root.minsize(1100, 600)
 pygame.mixer.init()
-root.configure(background="#191919")
 files = []
 path = ""
 played = False
@@ -65,9 +66,8 @@ def songselect(event):
 	global x_coord
 	duration = 0
 	x_coord = 0
-	position_slider.set(0)
 	counter = 0
-
+	position_slider.set(0)
 	index = songs.curselection()
 	index = index[0]
 	pygame.mixer.music.load(files[index])
@@ -76,6 +76,7 @@ def songselect(event):
 	state = "playing"
 	dynamic_title.set(files[index][:-4])
 	dynamic_control.set("Pause")
+	get_thumbnail(files[index])
 
 def play_pause_control():
 	global state
@@ -127,6 +128,7 @@ def previous_song():
 		songs.select_clear(index + 1)
 	songs.select_set(index)
 	position_slider.set(0)
+	get_thumbnail(files[index])
 	songs.event_generate("<<ListboxSelect>>")
 	
 
@@ -157,7 +159,7 @@ def next_song():
 		songs.select_clear(index - 1)
 	songs.select_set(index)
 	position_slider.set(0)
-	
+	get_thumbnail(files[index])
 	songs.event_generate("<<ListboxSelect>>")
 
 def shuffle_song():
@@ -165,6 +167,11 @@ def shuffle_song():
 	global duration
 	global x_coord
 	global counter
+	global played
+
+	if played == False:
+		next_song()
+		previous_song()
 	c = 0
 	random_song = (random.randint(0, len(files) - 1))
 	index = random_song
@@ -176,6 +183,7 @@ def shuffle_song():
 		c += 1
 	songs.select_set(random_song)
 	position_slider.set(0)
+	get_thumbnail(files[index])
 	duration = 0
 	x_coord = 0
 	counter = 0
@@ -208,6 +216,12 @@ def check_duration():
 				duration = 0
 	root.after(100, check_duration)
 
+def get_thumbnail(file):
+	audio = ID3(file)
+	album_art = audio.getall("APIC")[0].data
+	with open("image.jpg", "wb") as img:
+		img.write(album_art)
+
 def volume(event):
 	pygame.mixer.music.set_volume(volume_slider.get())	
 	
@@ -219,7 +233,7 @@ def mouse_click(event):
 	global played
 	global counter
 	length = MP3(files[index]).info.length
-	x_coord = 100 / (800 / (event.x - 1))
+	x_coord = 100 / (1102 / (event.x - 1))
 	position_slider.set(x_coord)
 	if played == True:
 		pygame.mixer.music.set_pos((length * x_coord) / 100)
@@ -255,65 +269,89 @@ def youtube_launch():
 
 
 # Placing widgets
-youtube_open = Button(root, text="Download", command=youtube_launch, font="{} 12 bold".format(font), background="#000000", foreground="#ffffff")
-youtube_open.place(x=0, y=380)
+playicon = PhotoImage(file="{}/play_icon.png".format(PATH))
+downloadicon = PhotoImage(file="{}/download_icon.png".format(PATH))
+nexticon = PhotoImage(file="{}/next_icon.png".format(PATH))
+previousicon = PhotoImage(file="{}/previous_icon.png".format(PATH))
+shuffleicon = PhotoImage(file="{}/shuffle_icon.png".format(PATH))
+pauseicon = PhotoImage(file="{}/pause_icon.png".format(PATH))
+image = Image.open("/home/straya/snd/image.jpg")
+resize = image.resize((45, 45), Image.ANTIALIAS)
+resize.save("/home/straya/snd/image.jpg")
+thumb = ImageTk.PhotoImage(resize)
 
+
+canvas = Canvas(root, width=1100, height=600, bg="#111111")
+canvas.create_rectangle(0, 530, 1100, 600, fill="black")
+canvas.place(x=-1, y=-1)
+download_button = Button(root, command=youtube_launch, image=downloadicon, background="#111111", activebackground="#111111", highlightthickness=-1, bd=0)
+download_button.place(x=5, y=470)
+thumbnail = Label(root, image=thumb)
+thumbnail.image = thumb
+thumbnail.place(x=6, y=544)
 volume_slider = Scale(root, 
 	from_=0, 
 	to=1, 
 	orient=HORIZONTAL,  
-	background="#191919", 
+	background="#ffffff", 
 	sliderrelief=FLAT, 
 	sliderlength=5,
 	width=10,
 	relief=FLAT, 
 	command=volume,
 	length=200, 
-	troughcolor="#000000", 
+	troughcolor="#374089", 
 	resolution=0.01, 
 	showvalue=0,
-	highlightbackground="#191919")
+	highlightbackground="#000000",
+	highlightthickness=-1,
+	bd=0)
 
 position_slider = Scale(root, 
 	from_=0, 
 	to=100, 
 	orient=HORIZONTAL, 
 	command=thing, 
-	background="#191919", 
+	background="#ffffff", 
 	sliderrelief=FLAT, 
 	sliderlength=5,
 	relief=FLAT, 
-	length=800, 
-	troughcolor="#000000", 
+	length=1102, 
+	troughcolor="#374089", 
 	resolution=0.01, 
 	showvalue=0,
-	highlightbackground="#191919")
-position_slider.place(x=-2, y=420)
-volume_slider.place(x=596, y=475)
+	highlightbackground="#000000",
+	highlightthickness=-1,
+	bd=0)
+
+position_slider.place(x=-2, y=520)
+volume_slider.place(x=896, y=575)
 current_pos = StringVar()
 song_length = StringVar()
 dynamic_control = StringVar()
 dynamic_control.set("Play")
 dynamic_title = StringVar()
-song_length_label = Label(root, font="{} 12 bold".format(font), textvariable=song_length, background="#191919", foreground="#ffffff")
-current_pos_label = Label(root, font="{} 12 bold".format(font), textvariable=current_pos, background="#191919", foreground="#ffffff")
-song_title = Label(root, font="{} 12 bold".format(font), textvariable=dynamic_title, background="#191919", foreground="#ffffff")
-song_title.place(x=0, y=470)
-songs = Listbox(root, width=85, font="{} 12 bold".format(font), background="#191919", foreground="#ffffff", highlightthickness=0, borderwidth=-1, selectborderwidth=0, selectbackground="#2d5391", selectforeground="#ffffff", relief=FLAT)
+if len(files) != 0:
+	dynamic_title.set(files[index][:-4])
+song_length_label = Label(root, font="{} 12 bold".format(font), textvariable=song_length, background="#000000", foreground="#ffffff")
+current_pos_label = Label(root, font="{} 12 bold".format(font), textvariable=current_pos, background="#000000", foreground="#ffffff")
+song_title = Label(root, font="{} 12 bold".format(font), textvariable=dynamic_title, background="#000000", foreground="#ffffff")
+song_title.place(x=55, y=566)
+songs = Listbox(root, width=50, font="{} 12 bold".format(font), background="#191919", foreground="#ffffff", highlightthickness=0, borderwidth=-1, selectborderwidth=0, selectbackground="#374089", selectforeground="#ffffff", relief=FLAT)
 songs.bind("<<ListboxSelect>>", songselect)
 for song in files:
 	songs.insert(END, song[:-4])
-shuffle_button = Button(root, width=10, text="Shuffle", command=shuffle_song, font="{} 12".format(font), background="#000000", foreground="#ffffff")
-shuffle_button.place(x=300, y=300)
+shuffle_button = Button(root, command=shuffle_song, image=shuffleicon, background="#000000", activebackground="#374089", highlightthickness=-1, bd=0)
+shuffle_button.place(x=400, y=540)
 songs.place(x=20, y=20)
-next_button = Button(root, width=10, text="Next", command=next_song, font="{} 12".format(font), background="#000000", foreground="#ffffff")
-next_button.place(x=0, y=300)
-play_button = Button(root, width=10, text="Play", command=play_pause_control, font="{} 12".format(font), textvariable=dynamic_control, background="#000000", foreground="#ffffff")
-play_button.place(x=100, y=300)
-previous_button = Button(root, width=10, text="Previous", command=previous_song, font="{} 12".format(font), background="#000000", foreground="#ffffff")
-previous_button.place(x=200, y=300)
-song_length_label.place(x=755, y=440)
-current_pos_label.place(x=0, y=440)
+next_button = Button(root, command=next_song, background="#000000", image=nexticon, activebackground="#374089", highlightthickness=-1, bd=0)
+next_button.place(x=550, y=540)
+play_button = Button(root, image=playicon, command=play_pause_control, background="#000000", activebackground="#374089", highlightthickness=-1, bd=0)
+play_button.place(x=500, y=540)
+previous_button = Button(root, command=previous_song, image=previousicon, background="#000000", activebackground="#374089", highlightthickness=-1, bd=0)
+previous_button.place(x=450, y=540)
+song_length_label.place(x=1055, y=540)
+current_pos_label.place(x=55, y=540)
 volume_slider.set(0.4)
 check_duration()
 root.mainloop()

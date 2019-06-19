@@ -44,4 +44,5 @@ Changelog:\
 19/06/2019:\
 . Fixed very known bug where music would not play sometimes\
 . Added a repeat song button which can be toggled\
-. Fixed bug where pause button wasn't the correct size
+. Fixed bug where pause button wasn't the correct size\
+. Added json file support which makes it easier to store data

@@ -246,9 +246,10 @@ def check_duration():
 			if round(length, 1) == round(counter, 1):
 				next_song()
 				duration = 0
-	if pygame.mixer.music.get_pos() < 0:
-		next_song()
-		previous_song()
+	if played == True:
+		if pygame.mixer.music.get_pos() < 0:
+			next_song()
+			previous_song()
 	root.after(100, check_duration)
 
 def get_thumbnail(file):

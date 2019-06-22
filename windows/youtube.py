@@ -1,10 +1,15 @@
 # ydl1.py
 from __future__ import unicode_literals
 import youtube_dl
+import json
+file = open("data.json", "r")
+data_file = json.load(file)
+
+
 ydl_opts = {
 	'writethumbnail': True,
 	'format': "140",
-	'outtmpl': '/home/straya/snd/%(title)s.%(ext)s',
+	'outtmpl': '{}/%(title)s.%(ext)s'.format(data_file["AUDIO_DIR"]),
 	'postprocessors': [
         {
             'key': 'FFmpegExtractAudio',
@@ -17,7 +22,7 @@ ydl_opts = {
 sc_opts = {
 	'writethumbnail': True,
 	'format': "http_mp3_128_url",
-	'outtmpl': '/home/straya/snd/%(title)s.%(ext)s',
+	'outtmpl': '{}/%(title)s.%(ext)s'.format(data_file["AUDIO_DIR"]),
 	'postprocessors': [
 		{
 	        'key': 'FFmpegExtractAudio',

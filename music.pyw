@@ -23,11 +23,15 @@ repeat = False
 duration = 0
 x_coord = 0
 counter = 0
+index = 0
+
 data = {
 	"AUDIO_DIR": "",
-	"CODE_DIR" : "/home/straya/code/PyPlayer"
-}
+	"CODE_DIR" : "/home/straya/code/PyPlayer",
+	"playlist_names" : [],
+	"playlist_indexes" : []
 
+}
 
 def get_directory():
 	global data
@@ -38,10 +42,12 @@ if os.path.getsize("/home/straya/code/PyPlayer/data.json") == 0:
 	file = open("data.json", "w+")
 	get_directory()
 	json.dump(data, file, indent=4)
+	file.close()
 else:
 	file = open("data.json", "r")
 	data_file = json.load(file)
 	data["AUDIO_DIR"] = data_file["AUDIO_DIR"]
+	file.close()
 
 pygame.mixer.music.set_volume(0.4)
 os.chdir(data["AUDIO_DIR"])
@@ -54,7 +60,7 @@ def get_files():
 				files.append(filenames[c])
 
 get_files()				
-index = 0
+
 if len(files) == 0:
 	print("add some songs!")
 else:
@@ -230,6 +236,8 @@ def check_duration():
 	global played
 	global x_coord
 	global counter
+
+
 	if len(files) > 0:
 		length = MP3(files[index]).info.length
 		formatted_length = time.strftime("/ %M:%S", time.gmtime(round(length, 1)))
@@ -247,9 +255,10 @@ def check_duration():
 				next_song()
 				duration = 0
 	if played == True:
-		if pygame.mixer.music.get_pos() < 0:
-			next_song()
-			previous_song()
+				if pygame.mixer.music.get_pos() < 0:
+					next_song()
+					previous_song()
+			
 	root.after(100, check_duration)
 
 def get_thumbnail(file):
@@ -296,6 +305,16 @@ def repeat_song():
 	else:
 		repeat = False
 		loop_button.configure(image=repeaticon)
+	
+def create_playlist():
+	global data
+	if new_playlist.get() != '':
+		data["playlist_names"].append([new_playlist.get()])
+		data["playlist_indexes"].append([])
+	with open('data.json', 'w+') as file:
+		json_data = json.dumps(data, indent=4)
+		file.write(json_data)
+	print(data)
 	
 
 def youtube_launch():
@@ -347,6 +366,10 @@ thumb = ImageTk.PhotoImage(image)
 canvas = Canvas(root, width=1100, height=600, bg="#0c0c0c")
 download_button = Button(root, command=youtube_launch, image=downloadicon, background="#000000", activebackground="#000000", highlightthickness=-1, bd=0)
 thumbnail = Label(root, image=thumb, background="#0c0c0c", activebackground="#0c0c0c", highlightthickness=-1, bd=0)
+new_button = Button(root, text="New Playlist", command=create_playlist)
+add_button = Button(root, text="Add")
+playlists = Listbox(root, width=50, height=18, font="{} 12".format(font), background="#374089", foreground="#ffffff", highlightthickness=0, borderwidth=0, selectborderwidth=0, selectbackground="#374089", selectforeground="#ffffff", relief=FLAT, activestyle="none")
+new_playlist = Entry(root)
 volume_slider = Scale(root, 
 	from_=0, 
 	to=1, 
@@ -400,18 +423,22 @@ songs.bind("<<ListboxSelect>>", songselect)
 for song in files:
 	songs.insert(END, "     " + song[:-4])
 position_slider.place(x=-2, y=411)
-volume_slider.place(x=730, y=488)
+volume_slider.place(x=730, y=483)
 position_slider.bind("<Button-1>", mouse_click)
 
 if len(files) != 0:
 	dynamic_title.set(files[index][:-4])
+new_button.place(x=700, y=300)
+add_button.place(x=700, y=350)
+new_playlist.place(x=700, y=250)
+playlists.place(x=0, y=0)
 songs.place(x=250, y=0)
 song_title.place(x=75, y=468)
-shuffle_button.place(x=730, y=450)
-loop_button.place(x=900, y=450)
-next_button.place(x=860, y=450)
-play_button.place(x=815, y=450)
-previous_button.place(x=770, y=450)
+shuffle_button.place(x=730, y=445)
+loop_button.place(x=900, y=445)
+next_button.place(x=860, y=445)
+play_button.place(x=815, y=445)
+previous_button.place(x=770, y=445)
 song_length_label.place(x=120, y=445)
 current_pos_label.place(x=75, y=445)
 volume_slider.set(0.4)

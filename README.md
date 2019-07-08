@@ -46,3 +46,7 @@ Changelog:\
 . Added a repeat song button which can be toggled\
 . Fixed bug where pause button wasn't the correct size\
 . Added json file support which makes it easier to store data
+
+08/07/2019:\
+. Added keyboard controls\
+. Adjusted font of songs list

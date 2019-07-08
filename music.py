@@ -14,11 +14,12 @@ from PIL import Image, ImageTk
 import time
 import json
 
+
 # declaring all the variables required
 font = "roboto"
 root = Tk()
 root.minsize(950, 518)
-pygame.mixer.init()
+pygame.mixer.init(22050, -16, 2, 2048)
 files = []
 played = False
 state = "paused"
@@ -31,7 +32,8 @@ index = 0
 # dictionary used to specify music directory and code directory
 data = {
 	"AUDIO_DIR": "",
-	"CODE_DIR" : "/home/straya/code/PyPlayer"
+	"CODE_DIR" : "/home/straya/code/PyPlayer",
+	"volume": 0.4
 }
 
 
@@ -406,7 +408,7 @@ def check_duration():
 			position_slider.set(x_coord)
 
 			# check if the song has ended
-			if round(length, 1) == round(counter, 1):
+			if round(length, 1) == round(counter, 1) or round(counter, 1) > round(length, 1):
 				# play the next song
 				next_song()
 				# set the song position to 0
@@ -460,7 +462,9 @@ def get_thumbnail(file):
 # function used to change the volume of the song
 def volume(event):
 	# set the volume of the song to the value of the volume slider
-	pygame.mixer.music.set_volume(volume_slider.get())	
+	pygame.mixer.music.set_volume(volume_slider.get())
+	if pygame.mixer.music.get_volume() != 0:
+		data["volume"] = volume_slider.get()	
 	
 # function which changes the position of the song to the x coordinate of the position slider
 def mouse_click(event):
@@ -533,7 +537,7 @@ def youtube_launch():
 
 		# add padding to the songs list
 		for file in files:
-			songs.insert(END, "     " + file[:-4])
+			songs.insert(END, file[:-4])
 	
 	# create the music downloader widget
 	youtube_window = Toplevel(background="#0c0c0c")
@@ -571,6 +575,43 @@ def youtube_launch():
 	# create the service selector widget
 	service_select = ttk.Combobox(youtube_window, values=["Youtube", "Soundcloud"], font="{} 12 bold".format(font), state="readonly")
 	service_select.place(x=0, y=470)
+
+def keylisten(event):
+	global counter
+	global x_coord
+	global index
+	volume = volume_slider.get()
+	length = MP3(files[index]).info.length
+	if event.char == " ":
+		play_pause_control()
+	if counter >= 0:
+		if event.keysym == "Right":
+			counter += 10
+			x_coord += round(1000 / length, 2)
+			pygame.mixer.music.set_pos(counter)
+
+		if event.keysym == "Left":
+			if counter <= 10:
+				counter = 0
+				x_coord = 0
+				pygame.mixer.music.set_pos(counter)
+			else:
+				counter -= 10
+				x_coord -= round(1000 / length, 2)
+				pygame.mixer.music.set_pos(counter)
+	if event.char == "m":
+		if pygame.mixer.music.get_volume() == 0:
+			pygame.mixer.music.set_volume(data["volume"])
+			volume_slider.set(data["volume"])
+		else:
+			pygame.mixer.music.set_volume(0)
+			volume_slider.set(0)
+	if event.char == "=":
+		pygame.mixer.music.set_volume(volume + 0.05)
+		volume_slider.set(volume + 0.05)
+	if event.char == "-":
+		pygame.mixer.music.set_volume(volume - 0.05)
+		volume_slider.set(volume - 0.05)
 
 # Widget organisation
 
@@ -628,7 +669,7 @@ volume_slider = Scale(root,
 # create music control buttons and labels
 song_title = Label(root, font="{} 12 bold".format(font), textvariable=dynamic_title, background="#000000", foreground="#ffffff")
 loop_button = Button(root, command=repeat_song, image=repeaticon, background="#000000", fg="#ffffff", activebackground="#374089", highlightthickness=-1, bd=0)
-songs = Listbox(root, width=50, height=18, font="{} 12".format(font), background="#111111", foreground="#ffffff", highlightthickness=0, borderwidth=0, selectborderwidth=0, selectbackground="#374089", selectforeground="#ffffff", relief=FLAT, activestyle="none")
+songs = Listbox(root, width=65, height=22, font="{} 10".format(font), background="#111111", foreground="#ffffff", highlightthickness=0, borderwidth=0, selectborderwidth=0, selectbackground="#374089", selectforeground="#ffffff", relief=FLAT, activestyle="none")
 previous_button = Button(root, command=previous_song, image=previousicon, background="#000000", activebackground="#374089", highlightthickness=-1, bd=0)
 play_button = Button(root, image=playicon, command=play_pause_control, background="#000000", activebackground="#374089", highlightthickness=-1, bd=0)
 song_length_label = Label(root, font="{} 12 bold".format(font), textvariable=song_length, background="#000000", foreground="#ffffff")
@@ -659,11 +700,11 @@ canvas.create_rectangle(0, 420, 950, 518, fill="black")
 canvas.place(x=-1, y=-1)
 download_button.place(x=660, y=450)
 thumbnail.place(x=22, y=447)
-songs.bind("<<ListboxSelect>>", songselect)
+# songs.bind("<<ListboxSelect>>", songselect)
 
 # insert the songs into the song list at the start of the program
 for song in files:
-	songs.insert(END, "     " + song[:-4])
+	songs.insert(END, "   " + song[:-4])
 position_slider.place(x=-2, y=411)
 volume_slider.place(x=730, y=483)
 
@@ -673,7 +714,7 @@ position_slider.bind("<Button-1>", mouse_click)
 # set the song title label to the first song
 if len(files) != 0:
 	dynamic_title.set(files[index][:-4])
-songs.place(x=250, y=0)
+songs.place(x=220, y=0)
 song_title.place(x=75, y=468)
 shuffle_button.place(x=730, y=445)
 loop_button.place(x=900, y=445)
@@ -687,10 +728,13 @@ current_pos_label.place(x=75, y=445)
 volume_slider.set(0.4)
 
 # set the thumbnail of the current song
-get_thumbnail(files[index])
+if len(files) > 0:
+	get_thumbnail(files[index])
 
 # call the check duration function
 check_duration()
 
+
+root.bind("<Key>", keylisten)
 # initialize the tkinter window
 root.mainloop()

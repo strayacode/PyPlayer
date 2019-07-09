@@ -559,10 +559,18 @@ def youtube_launch():
 	search_bar = Entry(youtube_window, font="{} 12 bold".format(font), width=78, foreground="#ffffff", background="#374089", highlightthickness=-1, bd=0)
 	search_bar.place(x=0, y=440)
 
+	status_percent = StringVar()
+	percentage = Label(youtube_window, textvariable=status_percent, font="{} 12 bold".format(font))
+	percentage.place(x=0, y=0)
+
 	# function used to download music
 	def youtube_download():
-		# call the download function from youtube.py supplying 2 arguments: the search term/link and the service 
+		# call the download function from youtube.py supplying 2 arguments: the search term/link and the service
+		
 		youtube.download(search_bar.get(), service_select.get())
+
+		
+	
 
 	# create the close button	
 	close_button = Button(youtube_window, image=closeicon, command=youtube_close, background="#0c0c0c", activebackground="#0c0c0c", highlightthickness=-1, bd=0)
@@ -575,6 +583,8 @@ def youtube_launch():
 	# create the service selector widget
 	service_select = ttk.Combobox(youtube_window, values=["Youtube", "Soundcloud"], font="{} 12 bold".format(font), state="readonly")
 	service_select.place(x=0, y=470)
+
+	
 
 def keylisten(event):
 	global counter
@@ -612,6 +622,10 @@ def keylisten(event):
 	if event.char == "-":
 		pygame.mixer.music.set_volume(volume - 0.05)
 		volume_slider.set(volume - 0.05)
+	if event.char == ".":
+		next_song()
+	if event.char == ",":
+		previous_song()
 
 # Widget organisation
 
@@ -667,13 +681,13 @@ volume_slider = Scale(root,
 	bd=0)
 
 # create music control buttons and labels
-song_title = Label(root, font="{} 12 bold".format(font), textvariable=dynamic_title, background="#000000", foreground="#ffffff")
+song_title = Label(root, font="{} 11".format(font), textvariable=dynamic_title, background="#000000", foreground="#ffffff")
 loop_button = Button(root, command=repeat_song, image=repeaticon, background="#000000", fg="#ffffff", activebackground="#374089", highlightthickness=-1, bd=0)
-songs = Listbox(root, width=65, height=22, font="{} 10".format(font), background="#111111", foreground="#ffffff", highlightthickness=0, borderwidth=0, selectborderwidth=0, selectbackground="#374089", selectforeground="#ffffff", relief=FLAT, activestyle="none")
+songs = Listbox(root, width=70, height=22, font="{} 10".format(font), background="#111111", foreground="#ffffff", highlightthickness=0, borderwidth=0, selectborderwidth=0, selectbackground="#374089", selectforeground="#ffffff", relief=FLAT, activestyle="none")
 previous_button = Button(root, command=previous_song, image=previousicon, background="#000000", activebackground="#374089", highlightthickness=-1, bd=0)
 play_button = Button(root, image=playicon, command=play_pause_control, background="#000000", activebackground="#374089", highlightthickness=-1, bd=0)
-song_length_label = Label(root, font="{} 12 bold".format(font), textvariable=song_length, background="#000000", foreground="#ffffff")
-current_pos_label = Label(root, font="{} 12 bold".format(font), textvariable=current_pos, background="#000000", foreground="#ffffff")
+song_length_label = Label(root, font="{} 11".format(font), textvariable=song_length, background="#000000", foreground="#ffffff")
+current_pos_label = Label(root, font="{} 11".format(font), textvariable=current_pos, background="#000000", foreground="#ffffff")
 next_button = Button(root, command=next_song, background="#000000", image=nexticon, activebackground="#374089", highlightthickness=-1, bd=0)
 shuffle_button = Button(root, command=shuffle_song, background="#000000", image=shuffleicon, activebackground="#374089", highlightthickness=-1, bd=0)
 

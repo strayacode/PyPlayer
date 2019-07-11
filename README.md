@@ -50,3 +50,7 @@ Changelog:\
 08/07/2019:\
 . Added keyboard controls\
 . Adjusted font of songs list
+
+11/07/2019:\
+. Added a queue feature\
+. Adjusted the UI

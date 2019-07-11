@@ -14,13 +14,13 @@ from PIL import Image, ImageTk
 import time
 import json
 
-
 # declaring all the variables required
 font = "roboto"
 root = Tk()
 root.minsize(950, 518)
 pygame.mixer.init(22050, -16, 2, 2048)
 files = []
+queue_files = []
 played = False
 state = "paused"
 repeat = False
@@ -28,7 +28,8 @@ duration = 0
 x_coord = 0
 counter = 0
 index = 0
-
+queue_index = 0 
+mode = "all"
 # dictionary used to specify music directory and code directory
 data = {
 	"AUDIO_DIR": "",
@@ -82,39 +83,35 @@ if len(files) == 0:
 else:
 	pygame.mixer.music.load(files[index])
 
-# function used to play a song via the songlist
-def songselect(event):
-	# import local variables
-	global played
-	global state
-	global counter 
-	global duration
-	global x_coord
-	global repeat
-	duration = 0
-	x_coord = 0
-	counter = 0
 
-	# reset position slider to 0
-	position_slider.set(0)
+def queue_add(event):
+	add_index = songs.curselection()[0]
+	if mode == "all":
+		queue_files.append(files[add_index])
+	elif mode == "queue":
+		queue_files.pop(add_index)
+		songs.delete(0, END)
+		for song in queue_files:
+			songs.insert(END, "   " + song[:-4])
+		if len(queue_files) > 0:
+			if queue_files[queue_index] == queue_files[add_index]:
+				next_song()
+				previous_song()
 
-	# set array index to the select song
-	index = songs.curselection()
-	index = index[0]
 
-	# play the selected song
-	pygame.mixer.music.load(files[index])
-	pygame.mixer.music.play()
+def display_queue():
+	global mode
+	mode = "queue"
+	songs.delete(0, END)
+	for song in queue_files:
+		songs.insert(END, "   " + song[:-4])
 
-	# record that the song has been played and that the state is currently playing
-	played = True
-	state = "playing"
-
-	# change the song title label to the current song
-	dynamic_title.set(files[index][:-4])
-
-	# get the thumbnail for the current song
-	get_thumbnail(files[index])
+def display_all():
+	global mode
+	mode = "all"
+	songs.delete(0, END)
+	for song in files:
+		songs.insert(END, "   " + song[:-4])
 
 # function which controls the state of playing or paused
 def play_pause_control():
@@ -126,29 +123,45 @@ def play_pause_control():
 	if state == "paused":
 		# check if a song has been played before
 		if played == False:
-			# play song
-			pygame.mixer.music.play()
+			if len(queue_files) > 0:
+				pygame.mixer.music.load(queue_files[queue_index])
+				# play song
+				pygame.mixer.music.play()
 
-			# visually select song in songslist
-			songs.select_set(index)
+				# change play/pause icon to paused
+				play_button.configure(image=pauseicon)
 
-			# change play/pause icon to paused
-			play_button.configure(image=pauseicon)
+				# record that the song has been played and that the state is currently playing
+				played = True
+				state = "playing"
 
-			# record that the song has been played and that the state is currently playing
-			played = True
-			state = "playing"
+				# set song title to current song
+				dynamic_title.set(queue_files[queue_index][:-4])
+			else:
+				# play song
+				pygame.mixer.music.play()
 
-			# set song title to current song
-			dynamic_title.set(files[index][:-4])
+				# change play/pause icon to paused
+				play_button.configure(image=pauseicon)
 
+				# record that the song has been played and that the state is currently playing
+				played = True
+				state = "playing"
+
+				# set song title to current song
+				dynamic_title.set(files[index][:-4])
 		# call this if loop if a song has been played before, but it does the exact same thing
 		elif played == True:
-			pygame.mixer.music.unpause()
-			play_button.configure(image=pauseicon)
-			state = "playing"
-			dynamic_title.set(files[index][:-4])
-
+			if len(queue_files) > 0:
+				pygame.mixer.music.unpause()
+				play_button.configure(image=pauseicon)
+				state = "playing"
+				dynamic_title.set(queue_files[queue_index][:-4])
+			else:
+				pygame.mixer.music.unpause()
+				play_button.configure(image=pauseicon)
+				state = "playing"
+				dynamic_title.set(files[index][:-4])
 	# check if song is playing
 	elif state == "playing":
 		if played == True:
@@ -171,64 +184,95 @@ def previous_song():
 	global duration
 	global x_coord
 	global repeat
+	global queue_index
 
-	# only play the previous song if repeat isn't on
-	if repeat == False:
-		# reset song length and position slider value to 0 
-		x_coord = 0
-		duration = 0
-		counter = 0
+	if len(queue_files) > 0:
+		# only play the previous song if repeat isn't on
+		if repeat == False:
+			# reset song length and position slider value to 0 
+			x_coord = 0
+			duration = 0
+			counter = 0
 
-		# change song index to the previous song
-		index -= 1
+			# change song index to the previous song
+			queue_index -= 1
 
-		# if the user goes to the previous song at index 0, play the last song in the list
-		if index < 0:
-			index = len(files) - 1
+			# if the user goes to the previous song at index 0, play the last song in the list
+			if queue_index < 0:
+				queue_index = len(queue_files) - 1
 
-		# play previous song
-		pygame.mixer.music.load(files[index])
-		pygame.mixer.music.play()
+			# play previous song
+			pygame.mixer.music.load(queue_files[queue_index])
+			pygame.mixer.music.play()
 
-		# set the song title to the current song
-		dynamic_title.set(files[index][:-4])
+			# set the song title to the current song
+			dynamic_title.set(queue_files[queue_index][:-4])
 
-		# record that the song has been played and that the state is currently playing
-		state = "playing"
-		played = True
+			# record that the song has been played and that the state is currently playing
+			state = "playing"
+			played = True
+		
+			# reset the position slider to 0
+			position_slider.set(0)
 
-		# remove all visually selected songs in list
-		if index == len(files) - 1:
-			songs.select_clear(0)
+			# set thumbnail to the current song
+			get_thumbnail(queue_files[queue_index])
 
-		# visually remove the previously selected song
+		# block of code instead if repeat is on which will just set the current position of the song to 0
 		else:
-			songs.select_clear(index + 1)
-
-		# visually select the current song
-		songs.select_set(index)
-
-		# reset the position slider to 0
-		position_slider.set(0)
-
-		# set thumbnail to the current song
-		get_thumbnail(files[index])
-
-		# generate a listboxselect event
-		songs.event_generate("<<ListboxSelect>>")
-
-	# block of code instead if repeat is on which will just set the current position of the song to 0
+			duration = 0
+			counter = 0
+			x_coord = 0
+			pygame.mixer.music.load(queue_files[queue_index])	
+			pygame.mixer.music.play()
+			dynamic_title.set(queue_files[queue_index][:-4])
+			state = "playing"
+			played = True
+			position_slider.set(0)
 	else:
-		duration = 0
-		counter = 0
-		x_coord = 0
-		pygame.mixer.music.load(files[index])	
-		pygame.mixer.music.play()
-		dynamic_title.set(files[index][:-4])
-		state = "playing"
-		played = True
-		position_slider.set(0)
-	
+		# only play the previous song if repeat isn't on
+		if repeat == False:
+			# reset song length and position slider value to 0 
+			x_coord = 0
+			duration = 0
+			counter = 0
+
+			# change song index to the previous song
+			index -= 1
+
+			# if the user goes to the previous song at index 0, play the last song in the list
+			if index < 0:
+				index = len(files) - 1
+
+			# play previous song
+			pygame.mixer.music.load(files[index])
+			pygame.mixer.music.play()
+
+			# set the song title to the current song
+			dynamic_title.set(files[index][:-4])
+
+			# record that the song has been played and that the state is currently playing
+			state = "playing"
+			played = True
+
+			# reset the position slider to 0
+			position_slider.set(0)
+
+			# set thumbnail to the current song
+			get_thumbnail(files[index])
+
+		# block of code instead if repeat is on which will just set the current position of the song to 0
+		else:
+			duration = 0
+			counter = 0
+			x_coord = 0
+			pygame.mixer.music.load(files[index])	
+			pygame.mixer.music.play()
+			dynamic_title.set(files[index][:-4])
+			state = "playing"
+			played = True
+			position_slider.set(0)
+
 # function used to play the next song
 def next_song():
 	# import local variables
@@ -239,62 +283,95 @@ def next_song():
 	global x_coord
 	global counter
 	global repeat
+	global queue_index
+	if len(queue_files) > 0:
+		# only play the previous song if repeat isn't on
+		if repeat == False:
+			# reset song length and position slider value to 0 
+			duration = 0
+			counter = 0
+			x_coord = 0
 
-	# only play the previous song if repeat isn't on
-	if repeat == False:
-		# reset song length and position slider value to 0 
-		duration = 0
-		counter = 0
-		x_coord = 0
+			# change song index to the next song
+			queue_index += 1
 
-		# change song index to the next song
-		index += 1
+			# if the user goes to the next song on last song, play the first song in the list
+			if queue_index == len(queue_files):
+				queue_index = 0
+			
+			# play the next song
+			pygame.mixer.music.load(queue_files[queue_index])	
+			pygame.mixer.music.play()
 
-		# if the user goes to the next song on last song, play the first song in the list
-		if index == len(files):
-			index = 0
-		
-		# play the next song
-		pygame.mixer.music.load(files[index])	
-		pygame.mixer.music.play()
+			# set the song title to the current song
+			dynamic_title.set(queue_files[queue_index][:-4])
 
-		# set the song title to the current song
-		dynamic_title.set(files[index][:-4])
+			# record that the song has been played and that the state is currently playing
+			state = "playing"
+			played = True
 
-		# record that the song has been played and that the state is currently playing
-		state = "playing"
-		played = True
+			# set the position slider to 0
+			position_slider.set(0)
 
-		# visually remove the recently played song
-		if index == 0:
-			songs.select_clear(len(files) - 1)
+			# set the thumbnail to the current
+			get_thumbnail(queue_files[queue_index])
+
+		# call this block of code instead if repeat is on which just resets the position of the song to 0
 		else:
-			songs.select_clear(index - 1)
-
-		# visually select the current song
-		songs.select_set(index)
-
-		# set the position slider to 0
-		position_slider.set(0)
-
-		# set the thumbnail to the current
-		get_thumbnail(files[index])
-
-		# generate listboxselect event
-		songs.event_generate("<<ListboxSelect>>")
-
-	# call this block of code instead if repeat is on which just resets the position of the song to 0
+			duration = 0
+			counter = 0
+			x_coord = 0
+			pygame.mixer.music.load(queue_files[index])	
+			pygame.mixer.music.play()
+			dynamic_title.set(queue_files[index][:-4])
+			state = "playing"
+			played = True
+			position_slider.set(0)
+		play_button.configure(image=pauseicon)
 	else:
-		duration = 0
-		counter = 0
-		x_coord = 0
-		pygame.mixer.music.load(files[index])	
-		pygame.mixer.music.play()
-		dynamic_title.set(files[index][:-4])
-		state = "playing"
-		played = True
-		position_slider.set(0)
-	play_button.configure(image=pauseicon)
+		# only play the previous song if repeat isn't on
+		if repeat == False:
+			# reset song length and position slider value to 0 
+			duration = 0
+			counter = 0
+			x_coord = 0
+
+			# change song index to the next song
+			index += 1
+
+			# if the user goes to the next song on last song, play the first song in the list
+			if index == len(files):
+				index = 0
+		
+			# play the next song
+			pygame.mixer.music.load(files[index])	
+			pygame.mixer.music.play()
+
+			# set the song title to the current song
+			dynamic_title.set(files[index][:-4])
+
+			# record that the song has been played and that the state is currently playing
+			state = "playing"
+			played = True
+
+			# set the thumbnail to the current
+			get_thumbnail(files[index])
+
+			# generate listboxselect event
+			songs.event_generate("<<ListboxSelect>>")
+
+		# call this block of code instead if repeat is on which just resets the position of the song to 0
+		else:
+			duration = 0
+			counter = 0
+			x_coord = 0
+			pygame.mixer.music.load(files[index])	
+			pygame.mixer.music.play()
+			dynamic_title.set(files[index][:-4])
+			state = "playing"
+			played = True
+			position_slider.set(0)
+		play_button.configure(image=pauseicon)
 
 # function to play a song randomly
 def shuffle_song():
@@ -305,65 +382,94 @@ def shuffle_song():
 	global counter
 	global played
 	global repeat
-
+	global queue_index
 	# code which will make sure song is played if one hasn't been played yet
 	if played == False:
 		next_song()
 		previous_song()
 
-	# variable for clearing the list selections later
-	c = 0
+	if len(queue_files) > 0:
+		# if repeat is off normally shuffle song
+		if repeat == False:
+			# choose random song in song list
+			random_song = (random.randint(0, len(queue_files) - 1))
 
-	# if repeat is off normally shuffle song
-	if repeat == False:
-		# choose random song in song list
-		random_song = (random.randint(0, len(files) - 1))
+			# change the song index to the random song index
+			queue_index = random_song
 
-		# change the song index to the random song index
-		index = random_song
+			# play the random song
+			pygame.mixer.music.load(queue_files[random_song])
+			pygame.mixer.music.play()
 
-		# play the random song
-		pygame.mixer.music.load(files[random_song])
-		pygame.mixer.music.play()
+			# set the song title to the random song
+			dynamic_title.set(queue_files[random_song][:-4])
 
-		# set the song title to the random song
-		dynamic_title.set(files[random_song][:-4])
+			# set the position slider to 0
+			position_slider.set(0)
 
-		# clear all visually selected songs in song list
-		while c < len(files):
-			songs.select_clear(c)
-			c += 1
+			# set the thumbnail to the current song
+			get_thumbnail(queue_files[queue_index])
 
-		# visually select current song
-		songs.select_set(random_song)
+			# set song position values to 0
+			duration = 0
+			x_coord = 0
+			counter = 0
 
-		# set the position slider to 0
-		position_slider.set(0)
+		# call this block of code if repeat is on which just sets the song position of the song to 0
+		else:
+			pygame.mixer.music.load(queue_files[queue_index])
+			pygame.mixer.music.play()
+			dynamic_title.set(queue_files[queue_index][:-4])
+			position_slider.set(0)
+			get_thumbnail(queue_files[queue_index])
+			duration = 0
+			x_coord = 0
+			counter = 0
 
-		# set the thumbnail to the current song
-		get_thumbnail(files[index])
+		# set the play/pause icon to a pauseicon
+		play_button.configure(image=pauseicon)
 
-		# set song position values to 0
-		duration = 0
-		x_coord = 0
-		counter = 0
-
-	# call this block of code if repeat is on which just sets the song position of the song to 0
 	else:
-		pygame.mixer.music.load(files[index])
-		pygame.mixer.music.play()
-		dynamic_title.set(files[index][:-4])
-		while c < len(files):
-			songs.select_clear(c)
-			c += 1
-		position_slider.set(0)
-		get_thumbnail(files[index])
-		duration = 0
-		x_coord = 0
-		counter = 0
+		# if repeat is off normally shuffle song
+		if repeat == False:
+			# choose random song in song list
+			random_song = (random.randint(0, len(files) - 1))
 
-	# set the play/pause icon to a pauseicon
-	play_button.configure(image=pauseicon)
+			# change the song index to the random song index
+			index = random_song
+
+			# play the random song
+			pygame.mixer.music.load(files[random_song])
+			pygame.mixer.music.play()
+
+			# set the song title to the random song
+			dynamic_title.set(files[random_song][:-4])
+
+			# set the position slider to 0
+			position_slider.set(0)
+
+			# set the thumbnail to the current song
+			get_thumbnail(files[index])
+
+			# set song position values to 0
+			duration = 0
+			x_coord = 0
+			counter = 0
+
+		# call this block of code if repeat is on which just sets the song position of the song to 0
+		else:
+
+			pygame.mixer.music.load(files[index])
+			pygame.mixer.music.play()
+			dynamic_title.set(files[index][:-4])
+			position_slider.set(0)
+			get_thumbnail(files[index])
+			duration = 0
+			x_coord = 0
+			counter = 0
+
+		# set the play/pause icon to a pauseicon
+		play_button.configure(image=pauseicon)
 
 # function which checks the current song position every 100 milliseconds
 def check_duration():
@@ -374,8 +480,45 @@ def check_duration():
 	global x_coord
 	global counter
 
-	# only check duration of song if songs are available
-	if len(files) > 0:
+	if len(queue_files) > 0:
+		# get the length for the current song
+		length = MP3(queue_files[queue_index]).info.length
+
+		# format the length which is in seconds into minutes and seconds
+		formatted_length = time.strftime("/ %M:%S", time.gmtime(round(length, 1)))
+
+		# change the song length label to the song length of the current song
+		song_length.set(formatted_length)
+
+		# if song has never been played before, set the current position label to 0
+		if state == "paused" and played == False:
+			current_pos.set("00:00")
+
+		# if the song state is playing
+		if state == "playing":
+			# add 0.1 to the counter variable
+			counter += 0.1
+
+			# add 0.1 to the duration and the x coordinate of the position slider
+			duration += round(10 / length, 2)
+			x_coord += round(10 / length, 2)
+
+			# format the current position which is in seconds to minutes and seconds
+			formatted_duration= time.strftime("%M:%S", time.gmtime(counter))
+
+			# set the current position length label to the current position of the current song
+			current_pos.set(formatted_duration)
+
+			# update the position of the position slider to the value of x_coord
+			position_slider.set(x_coord)
+
+			# check if the song has ended
+			if round(length, 1) == round(counter, 1) or round(counter, 1) > round(length, 1):
+				# play the next song
+				next_song()
+				# set the song position to 0
+				duration = 0
+	elif len(files) > 0:
 		# get the length for the current song
 		length = MP3(files[index]).info.length
 
@@ -413,6 +556,7 @@ def check_duration():
 				next_song()
 				# set the song position to 0
 				duration = 0
+	
 	# if statement which fixes bug where song would play without audio
 	if played == True:
 				# if song position is an invalid value
@@ -422,7 +566,7 @@ def check_duration():
 					previous_song()
 			
 	# call this function every 100 milliseconds		
-	root.after(100, check_duration)
+	root.after(99, check_duration)
 
 # function which is used to get the thumbnail of the current song, the argument file is also used to make the code more efficient in terms of lines of code
 def get_thumbnail(file):
@@ -474,13 +618,17 @@ def mouse_click(event):
 	global x_coord
 	global played
 	global counter
-	global item
 
-	# get the current song length
-	length = MP3(files[index]).info.length
+	if len(queue_files) > 0:
+		# get the current song length
+		length = MP3(queue_files[queue_index]).info.length
+	elif len(files) > 0:
+		# get the current song length
+		length = MP3(files[index]).info.length
+
 
 	# convert the value of the x coordinate to a percentage out of 100
-	x_coord = 100 / (950 / (event.x - 1))
+	x_coord = 100 / (954 / (event.x - 1))
 
 	# set the position slider to be at the same value as the x coordinate
 	position_slider.set(x_coord)
@@ -543,7 +691,7 @@ def youtube_launch():
 	youtube_window = Toplevel(background="#0c0c0c")
 
 	# change the window size to 800x500
-	youtube_window.geometry('800x500')
+	youtube_window.geometry('500x250')
 
 	# make a new style
 	style = ttk.Style()
@@ -554,36 +702,33 @@ def youtube_launch():
 	style.map('TCombobox', background=[('readonly','#111111')])
 	style.map('TCombobox', relief=[('readonly', 'flat')])
 	style.map('TCombobox', shiftrelief=[('readonly', 'flat')])
+	style.map('TCombobox', foreground=[('readonly', '#ffffff')])
 
 	# create the search bar
-	search_bar = Entry(youtube_window, font="{} 12 bold".format(font), width=78, foreground="#ffffff", background="#374089", highlightthickness=-1, bd=0)
-	search_bar.place(x=0, y=440)
+	entry_var = StringVar()
+	search_bar = Entry(youtube_window, font="{} 12 bold".format(font), textvariable=entry_var, width=45, foreground="#ffffff", background="#374089", highlightthickness=-1, bd=0)
+	search_bar.place(x=5, y=190)
 
-	status_percent = StringVar()
-	percentage = Label(youtube_window, textvariable=status_percent, font="{} 12 bold".format(font))
-	percentage.place(x=0, y=0)
-
+	download_label = Label(youtube_window, text="Downloads", font="{} 12 bold".format(font), bg="#111111", fg="#ffffff")
+	download_label.place(x=0, y=0)
+	
 	# function used to download music
 	def youtube_download():
 		# call the download function from youtube.py supplying 2 arguments: the search term/link and the service
-		
 		youtube.download(search_bar.get(), service_select.get())
-
-		
-	
 
 	# create the close button	
 	close_button = Button(youtube_window, image=closeicon, command=youtube_close, background="#0c0c0c", activebackground="#0c0c0c", highlightthickness=-1, bd=0)
-	close_button.place(x=752, y=-5)
+	close_button.place(x=452, y=-5)
 
 	# create the download button
 	download_button = Button(youtube_window, image=downloadicon, command=youtube_download, background="#0c0c0c", activebackground="#0c0c0c", highlightthickness=-1, bd=0)
-	download_button.place(x=730, y=440)
+	download_button.place(x=430, y=180)
 
 	# create the service selector widget
-	service_select = ttk.Combobox(youtube_window, values=["Youtube", "Soundcloud"], font="{} 12 bold".format(font), state="readonly")
-	service_select.place(x=0, y=470)
-
+	service_select = ttk.Combobox(youtube_window, values=["Youtube", "Soundcloud"], font="{} 11".format(font), state="readonly")
+	service_select.place(x=5, y=220) 
+	service_select.current(0)
 	
 
 def keylisten(event):
@@ -661,6 +806,9 @@ download_button = Button(root, command=youtube_launch, image=downloadicon, backg
 # create the thumbnail widget
 thumbnail = Label(root, image=thumb, background="#0c0c0c", activebackground="#0c0c0c", highlightthickness=-1, bd=0)
 
+# create the queue window button
+queue_button = Button(root, width=25, command=display_queue, font="{} 10".format(font), text="Queue", fg="#ffffff", bg="#0c0c0c", activebackground="#0c0c0c", activeforeground="#374089", highlightthickness=-1, bd=0, anchor=W)
+all_button = Button(root, width=25, command=display_all, font="{} 10".format(font), text="All", fg="#ffffff", bg="#0c0c0c", activebackground="#0c0c0c", activeforeground="#374089", highlightthickness=-1, bd=0, anchor=W)
 # create the volume slider 
 volume_slider = Scale(root, 
 	from_=0, 
@@ -683,7 +831,7 @@ volume_slider = Scale(root,
 # create music control buttons and labels
 song_title = Label(root, font="{} 11".format(font), textvariable=dynamic_title, background="#000000", foreground="#ffffff")
 loop_button = Button(root, command=repeat_song, image=repeaticon, background="#000000", fg="#ffffff", activebackground="#374089", highlightthickness=-1, bd=0)
-songs = Listbox(root, width=70, height=22, font="{} 10".format(font), background="#111111", foreground="#ffffff", highlightthickness=0, borderwidth=0, selectborderwidth=0, selectbackground="#374089", selectforeground="#ffffff", relief=FLAT, activestyle="none")
+songs = Listbox(root, width=92, height=22, font="{} 10".format(font), background="#111111", foreground="#ffffff", highlightthickness=0, borderwidth=0, selectborderwidth=0, selectbackground="#374089", selectforeground="#ffffff", relief=FLAT, activestyle="none")
 previous_button = Button(root, command=previous_song, image=previousicon, background="#000000", activebackground="#374089", highlightthickness=-1, bd=0)
 play_button = Button(root, image=playicon, command=play_pause_control, background="#000000", activebackground="#374089", highlightthickness=-1, bd=0)
 song_length_label = Label(root, font="{} 11".format(font), textvariable=song_length, background="#000000", foreground="#ffffff")
@@ -719,12 +867,13 @@ thumbnail.place(x=22, y=447)
 # insert the songs into the song list at the start of the program
 for song in files:
 	songs.insert(END, "   " + song[:-4])
-position_slider.place(x=-2, y=411)
+position_slider.place(x=0, y=411)
 volume_slider.place(x=730, y=483)
 
 # bind left mouse click to mouse click function
 position_slider.bind("<Button-1>", mouse_click)
 
+songs.bind("<Double-Button-1>", queue_add)
 # set the song title label to the first song
 if len(files) != 0:
 	dynamic_title.set(files[index][:-4])
@@ -737,7 +886,8 @@ play_button.place(x=815, y=445)
 previous_button.place(x=770, y=445)
 song_length_label.place(x=120, y=445)
 current_pos_label.place(x=75, y=445)
-
+queue_button.place(x=0, y=0)
+all_button.place(x=0, y=25)
 # set the volume of the song
 volume_slider.set(0.4)
 

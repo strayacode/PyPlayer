@@ -1,9 +1,11 @@
-# ydl1.py
+
 
 # import modules
 from __future__ import unicode_literals
 import youtube_dl
 
+
+	
 # dictionary used for youtube download options
 ydl_opts = {
 	# get the thumbnail for the song
@@ -14,6 +16,8 @@ ydl_opts = {
 
 	# the directory which the song is downloaded to
 	'outtmpl': '/home/straya/snd/%(title)s.%(ext)s',
+
+	# 'progress_hooks': [my_hook],
 
 	# options used after the song has been downloaded 
 	'postprocessors': [
@@ -39,6 +43,9 @@ sc_opts = {
 	# the directory which the song is downloaded to
 	'outtmpl': '/home/straya/snd/%(title)s.%(ext)s',
 
+
+	# 'progress_hooks': [my_hook],
+
 	# options used after the song has been downloaded 
 	'postprocessors': [
 		# only extract the audio from the link and use the mp3 file extension
@@ -55,6 +62,7 @@ sc_opts = {
 # function which is used by the main program to download music
 def download(term, service):
 	# check which service is being used
+	status = ""
 	if service == "Youtube":
 		# use the download options that we have specified
 		with youtube_dl.YoutubeDL(ydl_opts) as ydl:
@@ -78,3 +86,5 @@ def download(term, service):
 				# download song
 				sc.download(["scsearch:{}".format(term)])
 	
+
+

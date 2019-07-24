@@ -1,4 +1,7 @@
 {
     "AUDIO_DIR": "/home/straya/snd",
-    "CODE_DIR": "/home/straya/code/PyPlayer"
+    "CODE_DIR": "/home/straya/code/PyPlayer",
+    "playlist_names": [],
+    "playlist_indexes": [],
+    "volume": 0.4
 }

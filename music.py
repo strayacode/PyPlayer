@@ -99,7 +99,7 @@ def search_directory(event):
 			else:
 				if mode == "all":
 					for song in files:
-						if event.char in song:
+						if event.char.lower() in song.lower():
 							songs.insert(END, "   " + song[:-4])
 							search_files.append(song)
 		else:
@@ -109,7 +109,7 @@ def search_directory(event):
 			else:
 				if mode == "all":
 					for song in files:
-						if search_bar.get() in song:
+						if search_bar.get().lower() in song.lower():
 							songs.insert(END, "   " + song[:-4])
 							search_files.append(song)
 	if mode == "queue":
@@ -120,7 +120,7 @@ def search_directory(event):
 			else:
 				if mode == "all":
 					for song in queue_files:
-						if event.char in song:
+						if event.char.lower() in song.lower():
 							songs.insert(END, "   " + song[:-4])
 							search_files.append(song)
 		else:
@@ -130,7 +130,7 @@ def search_directory(event):
 			else:
 				if mode == "all":
 					for song in queue_files:
-						if search_bar.get() in song:
+						if search_bar.get().lower() in song.lower():
 							songs.insert(END, "   " + song[:-4])
 							search_files.append(song)
 def queue_add(event):
@@ -877,6 +877,7 @@ pauseicon = PhotoImage(file="{}/pause_icon.png".format(data["CODE_DIR"]))
 closeicon = PhotoImage(file="{}/close_icon.png".format(data["CODE_DIR"]))
 repeatonicon = PhotoImage(file="{}/repeat_on_icon.png".format(data["CODE_DIR"]))
 repeaticon = PhotoImage(file="{}/repeat_icon.png".format(data["CODE_DIR"]))
+searchicon = PhotoImage(file="{}/search_icon.png".format(data["CODE_DIR"]))
 
 # resize the inital image for image.jpg
 image = Image.open("/home/straya/snd/image.jpg")
@@ -894,8 +895,9 @@ download_button = Button(root, command=youtube_launch, image=downloadicon, backg
 thumbnail = Label(root, image=thumb, background="#0c0c0c", activebackground="#0c0c0c", highlightthickness=-1, bd=0)
 
 # create the queue window button
-queue_button = Button(root, width=25, command=display_queue, font="{} 10 bold".format(font), text="Queue", textvariable=dynamic_queue, fg="#8c8c8c", bg="#0c0c0c", activebackground="#0c0c0c", activeforeground="#ffffff", highlightthickness=-1, bd=0, anchor=W)
-all_button = Button(root, width=25, command=display_all, font="{} 10 bold".format(font), text="All", fg="#8c8c8c", bg="#0c0c0c", activebackground="#0c0c0c", activeforeground="#ffffff", highlightthickness=-1, bd=0, anchor=W)
+queue_button = Button(root, width=25, command=display_queue, font="{} 10 bold".format(font), text="Queue", textvariable=dynamic_queue, fg="#8c8c8c", bg="#0c0c0c", activebackground="#0c0c0c", activeforeground="#ffffff", highlightthickness=-1, bd=0, anchor=W, relief="flat")
+all_button = Button(root, width=25, command=display_all, font="{} 10 bold".format(font), text="All", fg="#8c8c8c", bg="#0c0c0c", activebackground="#0c0c0c", activeforeground="#ffffff", highlightthickness=-1, bd=0, anchor=W, relief="flat")
+search_label = Label(root, image=searchicon)
 # create the volume slider 
 volume_slider = Scale(root, 
 	from_=0, 
@@ -908,7 +910,7 @@ volume_slider = Scale(root,
 	relief=FLAT, 
 	command=volume,
 	length=200, 
-	troughcolor="#374089", 
+	troughcolor="#636ec9", 
 	resolution=0.01, 
 	showvalue=0,
 	highlightbackground="#000000",
@@ -917,14 +919,14 @@ volume_slider = Scale(root,
 
 # create music control buttons and labels
 song_title = Label(root, font="{} 10 bold".format(font), textvariable=dynamic_title, background="#000000", foreground="#ffffff")
-loop_button = Button(root, command=repeat_song, image=repeaticon, background="#000000", fg="#ffffff", activebackground="#374089", highlightthickness=-1, bd=0)
-songs = Listbox(root, width=95, height=21, font="{} 10".format(font), background="#111111", foreground="#ffffff", highlightthickness=0, borderwidth=0, selectborderwidth=0, selectbackground="#374089", selectforeground="#ffffff", relief=FLAT, activestyle="none")
-previous_button = Button(root, command=previous_song, image=previousicon, background="#000000", activebackground="#374089", highlightthickness=-1, bd=0)
-play_button = Button(root, image=playicon, command=play_pause_control, background="#000000", activebackground="#374089", highlightthickness=-1, bd=0)
+loop_button = Button(root, command=repeat_song, image=repeaticon, background="#000000", fg="#ffffff", activebackground="#000000", highlightthickness=-1, bd=0)
+songs = Listbox(root, width=95, height=21, font="{} 10".format(font), background="#111111", foreground="#ffffff", highlightthickness=0, borderwidth=0, selectborderwidth=0, selectbackground="#636ec9", selectforeground="#ffffff", relief=FLAT, activestyle="none")
+previous_button = Button(root, command=previous_song, image=previousicon, background="#000000", activebackground="#000000", highlightthickness=-1, bd=0)
+play_button = Button(root, image=playicon, command=play_pause_control, background="#000000", activebackground="#000000", highlightthickness=-1, bd=0)
 song_length_label = Label(root, font="{} 11".format(font), textvariable=song_length, background="#000000", foreground="#ffffff")
 current_pos_label = Label(root, font="{} 11".format(font), textvariable=current_pos, background="#000000", foreground="#ffffff")
-next_button = Button(root, command=next_song, background="#000000", image=nexticon, activebackground="#374089", highlightthickness=-1, bd=0)
-shuffle_button = Button(root, command=shuffle_song, background="#000000", image=shuffleicon, activebackground="#374089", highlightthickness=-1, bd=0)
+next_button = Button(root, command=next_song, background="#000000", image=nexticon, activebackground="#000000", highlightthickness=-1, bd=0)
+shuffle_button = Button(root, command=shuffle_song, background="#000000", image=shuffleicon, activebackground="#000000", highlightthickness=-1, bd=0)
 search_bar = Entry(root, width=23, font="{} 11".format(font), highlightthickness=-1, bd=0, bg="#636ec9", fg="#ffffff")
 status_label = Message(root, textvariable=dynamic_status, font="{} 13 bold".format(font), width=200, fg="#8c8c8c", bg="#111111", justify=CENTER)
 # create position slider
@@ -937,7 +939,7 @@ position_slider = Scale(root,
 	sliderlength=5,
 	relief=FLAT, 
 	length=952, 
-	troughcolor="#374089", 
+	troughcolor="#636ec9", 
 	resolution=0.01, 
 	showvalue=0,
 	width=10,
@@ -947,6 +949,7 @@ position_slider = Scale(root,
 
 # Placing the widgets
 canvas.create_rectangle(0, 420, 950, 518, fill="#000000")
+
 canvas.place(x=-1, y=-1)
 download_button.place(x=660, y=450)
 thumbnail.place(x=14, y=444)
@@ -973,9 +976,9 @@ play_button.place(x=815, y=450)
 previous_button.place(x=770, y=450)
 song_length_label.place(x=120, y=469)
 current_pos_label.place(x=75, y=469)
-queue_button.place(x=0, y=0)
-all_button.place(x=0, y=25)
-
+queue_button.place(x=-2, y=23)
+all_button.place(x=-2, y=48)
+canvas.create_rectangle(0, 0, 50, 24, fill="#636ec9")
 # set the volume of the song
 volume_slider.set(0.4)
 
@@ -986,9 +989,12 @@ if len(files) > 0:
 # call the check duration function
 check_duration()
 search_bar.insert(0, "Search")
+
 search_bar.bind("<Key>", search_directory)
 search_bar.bind("<Button-1>", search_directory)
-search_bar.place(x=3, y=392)
+
+search_bar.place(x=10, y=0)
+
 root.bind("<Key>", keylisten)
 
 # initialize the tkinter window

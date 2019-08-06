@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 # importing all the modules required for the program to function properly
 from tkinter import *
 from tkinter import filedialog, ttk
@@ -16,13 +16,12 @@ import time
 import json
 
 # declaring all the variables required
-font = "noto"
+font = "roboto"
 root = Tk()
-root.minsize(950, 510)
+root.minsize(950, 518)
 pygame.mixer.init(22050, -16, 2, 2048)
 files = []
 queue_files = []
-search_files = []
 played = False
 state = "paused"
 repeat = False
@@ -54,7 +53,7 @@ if os.path.getsize("/home/straya/code/PyPlayer/data.json") == 0:
 
 # if music directory already specified, load the data from the json file
 else:
-	file = open("{}/data.json".format(data["CODE_DIR"]), "r")
+	file = open("data.json", "r")
 	data_file = json.load(file)
 	data["AUDIO_DIR"] = data_file["AUDIO_DIR"]
 
@@ -85,83 +84,17 @@ if len(files) == 0:
 else:
 	pygame.mixer.music.load(files[index])
 
-def search_directory(event):
-	global search_term
-	search_files.clear()
-	songs.delete(0, END)
-	if search_bar.get() == "Search":
-		search_bar.delete(0, END)
-	if mode == "all":
-		if len(search_bar.get()) == 0:
-			if event.char == "":
-				for song in files:
-					songs.insert(END, "   " + song[:-4])
-			else:
-				if mode == "all":
-					for song in files:
-						if event.char.lower() in song.lower():
-							songs.insert(END, "   " + song[:-4])
-							search_files.append(song)
-		else:
-			if len(search_bar.get()) == 1 and event.char == "":
-				for song in files:
-					songs.insert(END, "   " + song[:-4])
-			else:
-				if mode == "all":
-					for song in files:
-						if search_bar.get().lower() in song.lower():
-							songs.insert(END, "   " + song[:-4])
-							search_files.append(song)
-	if mode == "queue":
-		if len(search_bar.get()) == 0:
-			if event.char == "":
-				for song in queue_files:
-					songs.insert(END, "   " + song[:-4])
-			else:
-				if mode == "all":
-					for song in queue_files:
-						if event.char.lower() in song.lower():
-							songs.insert(END, "   " + song[:-4])
-							search_files.append(song)
-		else:
-			if len(search_bar.get()) == 1 and event.char == "":
-				for song in queue_files:
-					songs.insert(END, "   " + song[:-4])
-			else:
-				if mode == "all":
-					for song in queue_files:
-						if search_bar.get().lower() in song.lower():
-							songs.insert(END, "   " + song[:-4])
-							search_files.append(song)
+
 def queue_add(event):
+
 	add_index = songs.curselection()[0]
 	if mode == "all":
-		if len(search_files) == 0:
-			queue_files.append(files[add_index])
-			for c in range(0, len(files)):
-				songs.select_clear(c)
-			if len(queue_files) == 1:
-				dynamic_queue.set("Queue - {} Track".format(len(queue_files)))
-			else:
-				dynamic_queue.set("Queue - {} Tracks".format(len(queue_files)))
-		else:
-			queue_files.append(search_files[add_index])
-			for c in range(0, len(files)):
-				songs.select_clear(c)
-			if len(queue_files) == 1:
-				dynamic_queue.set("Queue - {} Track".format(len(queue_files)))
-			else:
-				dynamic_queue.set("Queue - {} Tracks".format(len(queue_files)))
+		queue_files.append(files[add_index])
+		for c in range(0, len(files)):
+			songs.select_clear(c)
 	elif mode == "queue":
 		queue_files.pop(add_index)
 		songs.delete(0, END)
-		if len(queue_files) == 1:
-			dynamic_queue.set("Queue - {} Track".format(len(queue_files)))
-		elif len(queue_files) == 0:
-			dynamic_queue.set("Queue")
-			dynamic_status.set("Go add some songs to the queue!")
-		else:
-			dynamic_queue.set("Queue - {} Tracks".format(len(queue_files)))
 		for song in queue_files:
 			songs.insert(END, "   " + song[:-4])
 		if len(queue_files) > 0:
@@ -172,23 +105,13 @@ def queue_add(event):
 
 def display_queue():
 	global mode
-	if len(queue_files) == 0:
-		dynamic_status.set("Go add some songs to the queue!")
-		status_label.place(x=480, y=200)
-	search_bar.delete(0, END)
-	search_bar.insert(0, "Search")
 	mode = "queue"
 	songs.delete(0, END)
 	for song in queue_files:
 		songs.insert(END, "   " + song[:-4])
 
-
 def display_all():
 	global mode
-	status_label.place_forget()
-	dynamic_status.set("")
-	search_bar.delete(0, END)
-	search_bar.insert(0, "Search")
 	mode = "all"
 	songs.delete(0, END)
 	for song in files:
@@ -670,7 +593,7 @@ def get_thumbnail(file):
 	thumb = Image.open("/home/straya/snd/image.jpg")
 
 	# resize the thumbnail to a 45x45 image
-	resize = thumb.resize((50, 50), Image.ANTIALIAS)
+	resize = thumb.resize((45, 45), Image.ANTIALIAS)
 
 	# save the resized image to image.jpg
 	resize.save("/home/straya/snd/image.jpg")
@@ -753,10 +676,8 @@ def repeat_song():
 	
 # function used to make the interface for downloading music
 def youtube_launch():
-	global mode
 	# function used to close the music downloader window
 	def youtube_close():
-		mode = "all"
 		# close music downloader window
 		youtube_window.destroy()
 
@@ -768,7 +689,7 @@ def youtube_launch():
 
 		# add padding to the songs list
 		for file in files:
-			songs.insert(END, "   " + file[:-4])
+			songs.insert(END, file[:-4])
 	
 	# create the music downloader widget
 	youtube_window = Toplevel(background="#0c0c0c")
@@ -818,45 +739,44 @@ def keylisten(event):
 	global counter
 	global x_coord
 	global index
-	if "entry" not in str(root.focus_get()):
-		volume = volume_slider.get()
-		length = MP3(files[index]).info.length
-		if event.char == " ":
-			play_pause_control()
-		if counter >= 0:
-			if event.keysym == "Right":
-				counter += 10
-				x_coord += round(1000 / length, 2)
-				pygame.mixer.music.set_pos(counter)
+	volume = volume_slider.get()
+	length = MP3(files[index]).info.length
+	if event.char == " ":
+		play_pause_control()
+	if counter >= 0:
+		if event.keysym == "Right":
+			counter += 10
+			x_coord += round(1000 / length, 2)
+			pygame.mixer.music.set_pos(counter)
 
-			if event.keysym == "Left":
-				if counter <= 10:
-					counter = 0
-					x_coord = 0
-					pygame.mixer.music.set_pos(counter)
-				else:
-					counter -= 10
-					x_coord -= round(1000 / length, 2)
-					pygame.mixer.music.set_pos(counter)
-		if event.char == "m":
-			if pygame.mixer.music.get_volume() == 0:
-				pygame.mixer.music.set_volume(data["volume"])
-				volume_slider.set(data["volume"])
+		if event.keysym == "Left":
+			if counter <= 10:
+				counter = 0
+				x_coord = 0
+				pygame.mixer.music.set_pos(counter)
 			else:
-				pygame.mixer.music.set_volume(0)
-				volume_slider.set(0)
-		if event.char == "=":
-			pygame.mixer.music.set_volume(volume + 0.05)
-			volume_slider.set(volume + 0.05)
-		if event.char == "-":
-			pygame.mixer.music.set_volume(volume - 0.05)
-			volume_slider.set(volume - 0.05)
-		if event.char == ".":
-			next_song()
-		if event.char == ",":
-			previous_song()
-		if event.char == "s":
-			shuffle_song()
+				counter -= 10
+				x_coord -= round(1000 / length, 2)
+				pygame.mixer.music.set_pos(counter)
+	if event.char == "m":
+		if pygame.mixer.music.get_volume() == 0:
+			pygame.mixer.music.set_volume(data["volume"])
+			volume_slider.set(data["volume"])
+		else:
+			pygame.mixer.music.set_volume(0)
+			volume_slider.set(0)
+	if event.char == "=":
+		pygame.mixer.music.set_volume(volume + 0.05)
+		volume_slider.set(volume + 0.05)
+	if event.char == "-":
+		pygame.mixer.music.set_volume(volume - 0.05)
+		volume_slider.set(volume - 0.05)
+	if event.char == ".":
+		next_song()
+	if event.char == ",":
+		previous_song()
+	if event.char == "s":
+		shuffle_song()
 
 # Widget organisation
 
@@ -864,9 +784,7 @@ def keylisten(event):
 current_pos = StringVar()
 song_length = StringVar()
 dynamic_title = StringVar()
-dynamic_queue = StringVar()
-dynamic_status = StringVar()
-dynamic_queue.set("Queue")
+
 # load all the images required
 playicon = PhotoImage(file="{}/play_icon.png".format(data["CODE_DIR"]))
 downloadicon = PhotoImage(file="{}/download_icon.png".format(data["CODE_DIR"]))
@@ -875,13 +793,13 @@ previousicon = PhotoImage(file="{}/previous_icon.png".format(data["CODE_DIR"]))
 shuffleicon = PhotoImage(file="{}/shuffle_icon.png".format(data["CODE_DIR"]))
 pauseicon = PhotoImage(file="{}/pause_icon.png".format(data["CODE_DIR"]))
 closeicon = PhotoImage(file="{}/close_icon.png".format(data["CODE_DIR"]))
+circleicon = PhotoImage(file="{}/circle_icon.png".format(data["CODE_DIR"]))
 repeatonicon = PhotoImage(file="{}/repeat_on_icon.png".format(data["CODE_DIR"]))
 repeaticon = PhotoImage(file="{}/repeat_icon.png".format(data["CODE_DIR"]))
-searchicon = PhotoImage(file="{}/search_icon.png".format(data["CODE_DIR"]))
 
 # resize the inital image for image.jpg
 image = Image.open("/home/straya/snd/image.jpg")
-resize = image.resize((50, 50), Image.ANTIALIAS)
+resize = image.resize((45, 45), Image.ANTIALIAS)
 resize.save("/home/straya/snd/image.jpg")
 thumb = ImageTk.PhotoImage(image)
 
@@ -895,9 +813,8 @@ download_button = Button(root, command=youtube_launch, image=downloadicon, backg
 thumbnail = Label(root, image=thumb, background="#0c0c0c", activebackground="#0c0c0c", highlightthickness=-1, bd=0)
 
 # create the queue window button
-queue_button = Button(root, width=25, command=display_queue, font="{} 10 bold".format(font), text="Queue", textvariable=dynamic_queue, fg="#8c8c8c", bg="#0c0c0c", activebackground="#0c0c0c", activeforeground="#ffffff", highlightthickness=-1, bd=0, anchor=W, relief="flat")
-all_button = Button(root, width=25, command=display_all, font="{} 10 bold".format(font), text="All", fg="#8c8c8c", bg="#0c0c0c", activebackground="#0c0c0c", activeforeground="#ffffff", highlightthickness=-1, bd=0, anchor=W, relief="flat")
-search_label = Label(root, image=searchicon)
+queue_button = Button(root, width=25, command=display_queue, font="{} 10".format(font), text="Queue", fg="#8c8c8c", bg="#0c0c0c", activebackground="#0c0c0c", activeforeground="#ffffff", highlightthickness=-1, bd=0, anchor=W)
+all_button = Button(root, width=25, command=display_all, font="{} 10".format(font), text="All", fg="#8c8c8c", bg="#0c0c0c", activebackground="#0c0c0c", activeforeground="#ffffff", highlightthickness=-1, bd=0, anchor=W)
 # create the volume slider 
 volume_slider = Scale(root, 
 	from_=0, 
@@ -906,11 +823,11 @@ volume_slider = Scale(root,
 	background="#ffffff", 
 	sliderrelief=FLAT, 
 	sliderlength=5,
-	width=8,
+	width=10,
 	relief=FLAT, 
 	command=volume,
 	length=200, 
-	troughcolor="#636ec9", 
+	troughcolor="#374089", 
 	resolution=0.01, 
 	showvalue=0,
 	highlightbackground="#000000",
@@ -918,17 +835,16 @@ volume_slider = Scale(root,
 	bd=0)
 
 # create music control buttons and labels
-song_title = Label(root, font="{} 10 bold".format(font), textvariable=dynamic_title, background="#000000", foreground="#ffffff")
-loop_button = Button(root, command=repeat_song, image=repeaticon, background="#000000", fg="#ffffff", activebackground="#000000", highlightthickness=-1, bd=0)
-songs = Listbox(root, width=95, height=21, font="{} 10".format(font), background="#111111", foreground="#ffffff", highlightthickness=0, borderwidth=0, selectborderwidth=0, selectbackground="#636ec9", selectforeground="#ffffff", relief=FLAT, activestyle="none")
-previous_button = Button(root, command=previous_song, image=previousicon, background="#000000", activebackground="#000000", highlightthickness=-1, bd=0)
-play_button = Button(root, image=playicon, command=play_pause_control, background="#000000", activebackground="#000000", highlightthickness=-1, bd=0)
+song_title = Label(root, font="{} 11".format(font), textvariable=dynamic_title, background="#000000", foreground="#ffffff")
+loop_button = Button(root, command=repeat_song, image=repeaticon, background="#000000", fg="#ffffff", activebackground="#374089", highlightthickness=-1, bd=0)
+songs = Listbox(root, width=92, height=22, font="{} 10".format(font), background="#111111", foreground="#ffffff", highlightthickness=0, borderwidth=0, selectborderwidth=0, selectbackground="#374089", selectforeground="#ffffff", relief=FLAT, activestyle="none")
+previous_button = Button(root, command=previous_song, image=previousicon, background="#000000", activebackground="#374089", highlightthickness=-1, bd=0)
+play_button = Button(root, image=playicon, command=play_pause_control, background="#000000", activebackground="#374089", highlightthickness=-1, bd=0)
 song_length_label = Label(root, font="{} 11".format(font), textvariable=song_length, background="#000000", foreground="#ffffff")
 current_pos_label = Label(root, font="{} 11".format(font), textvariable=current_pos, background="#000000", foreground="#ffffff")
-next_button = Button(root, command=next_song, background="#000000", image=nexticon, activebackground="#000000", highlightthickness=-1, bd=0)
-shuffle_button = Button(root, command=shuffle_song, background="#000000", image=shuffleicon, activebackground="#000000", highlightthickness=-1, bd=0)
-search_bar = Entry(root, width=23, font="{} 11".format(font), highlightthickness=-1, bd=0, bg="#636ec9", fg="#ffffff")
-status_label = Message(root, textvariable=dynamic_status, font="{} 13 bold".format(font), width=200, fg="#8c8c8c", bg="#111111", justify=CENTER)
+next_button = Button(root, command=next_song, background="#000000", image=nexticon, activebackground="#374089", highlightthickness=-1, bd=0)
+shuffle_button = Button(root, command=shuffle_song, background="#000000", image=shuffleicon, activebackground="#374089", highlightthickness=-1, bd=0)
+
 # create position slider
 position_slider = Scale(root, 
 	from_=0, 
@@ -939,7 +855,7 @@ position_slider = Scale(root,
 	sliderlength=5,
 	relief=FLAT, 
 	length=952, 
-	troughcolor="#636ec9", 
+	troughcolor="#374089", 
 	resolution=0.01, 
 	showvalue=0,
 	width=10,
@@ -948,16 +864,15 @@ position_slider = Scale(root,
 	bd=0)
 
 # Placing the widgets
-canvas.create_rectangle(0, 420, 950, 518, fill="#000000")
-
+canvas.create_rectangle(0, 420, 950, 518, fill="black")
 canvas.place(x=-1, y=-1)
 download_button.place(x=660, y=450)
-thumbnail.place(x=14, y=444)
+thumbnail.place(x=22, y=447)
 
 # insert the songs into the song list at the start of the program
 for song in files:
 	songs.insert(END, "   " + song[:-4])
-position_slider.place(x=0, y=420)
+position_slider.place(x=0, y=411)
 volume_slider.place(x=730, y=483)
 
 # bind left mouse click to mouse click function
@@ -967,18 +882,17 @@ songs.bind("<Double-Button-1>", queue_add)
 # set the song title label to the first song
 if len(files) != 0:
 	dynamic_title.set(files[index][:-4])
-songs.place(x=194, y=0)
-song_title.place(x=75, y=445)
-shuffle_button.place(x=730, y=450)
-loop_button.place(x=900, y=450)
-next_button.place(x=860, y=450)
-play_button.place(x=815, y=450)
-previous_button.place(x=770, y=450)
-song_length_label.place(x=120, y=469)
-current_pos_label.place(x=75, y=469)
-queue_button.place(x=-2, y=23)
-all_button.place(x=-2, y=48)
-canvas.create_rectangle(0, 0, 50, 24, fill="#636ec9")
+songs.place(x=220, y=0)
+song_title.place(x=75, y=468)
+shuffle_button.place(x=730, y=445)
+loop_button.place(x=900, y=445)
+next_button.place(x=860, y=445)
+play_button.place(x=815, y=445)
+previous_button.place(x=770, y=445)
+song_length_label.place(x=120, y=445)
+current_pos_label.place(x=75, y=445)
+queue_button.place(x=0, y=0)
+all_button.place(x=0, y=25)
 # set the volume of the song
 volume_slider.set(0.4)
 
@@ -988,14 +902,8 @@ if len(files) > 0:
 
 # call the check duration function
 check_duration()
-search_bar.insert(0, "Search")
 
-search_bar.bind("<Key>", search_directory)
-search_bar.bind("<Button-1>", search_directory)
-
-search_bar.place(x=10, y=0)
 
 root.bind("<Key>", keylisten)
-
 # initialize the tkinter window
 root.mainloop()
